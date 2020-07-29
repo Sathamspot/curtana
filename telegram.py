@@ -40,7 +40,7 @@ class Userbot(TelegramClient):
         self._event_builders = ReverseList()
         self.loop.run_until_complete(self._async_init(bot_token=bot_token))
 
-        core_plugin = Path(__file__).parent / "watcher.py"
+        core_plugin = Path(__file__).parent / "app.py"
         self.load_plugin_from_file(core_plugin)
 
         for a_plugin_path in Path().glob(f"{self._plugin_path}/*.py"):

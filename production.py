@@ -17,6 +17,7 @@ class Config(object):
     SUDO_USERS = set(int(x) for x in os.environ.get("SUDO_USERS", "").split())
     BLACK_LIST = set(int(x) for x in os.environ.get(
         "BLACK_LIST", "").split())
+    CUSTOM_FILTERS = ["Download", "XDA", "Support", "Changelog", *os.environ.get("CUSTOM_FILTERS", "").split()]
     AUTH_CHATS = ["-1001438120125", *os.environ.get("AUTH_CHATS", "").split()]
     UPDATE_CHATS = ["@curtanaupdates", *os.environ.get("UPDATE_CHATS", "").split()]
     BLOCKED_UPDATES = os.environ.get("BLOCKED_UPDATES", "").split()

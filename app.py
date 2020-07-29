@@ -3,7 +3,6 @@
 
 import os
 import sys
-import asyncio
 from web import WebUtils
 from time import sleep
 
@@ -27,6 +26,8 @@ async def watcher(event):
     for chat in chats:
         async for message in bot.iter_messages(chat):
             messages.append(message)
+    web.data = {}
+    thumbnails = []
     for message in messages:
         text = message.text if message.text is not None else ""
         if not required(text):
@@ -34,21 +35,20 @@ async def watcher(event):
         head = f"{text.split()[0][1:]}"
         if head in Config.BLOCKED_UPDATES:
             continue
-        with open("surge/index.html", "r") as a:
-            with open("index.bak", "w") as b:
-                b.write(a.read())
+        with open("surge/index.html", "r") as index:
+            with open("index.bak", "w") as backup:
+                backup.write(index.read())
         if head.lower() not in str(web.data.keys()).lower():
             web.data.update({head: text})
             image = await bot.download_media(message, f"surge/{head}/")
-            thumbnails = []
             thumbnail = f"surge/{head}/thumbnail.png"
             os.rename(image, thumbnail)
             thumbnails.append(thumbnail)
             web.save(head)
     web.refresh()
-    logger.info("Update complete.")
+    logger.info("Update completed.")
     sleep(1)
-    logger.info("Deploying curtana.surge.sh")
+    logger.info("Deploying curtana.surge.sh..")
     web.deploy()
     sleep(1)
     logger.info("Cleaning up leftover files..")
@@ -56,4 +56,5 @@ async def watcher(event):
         os.remove(file)
     os.remove("surge/index.html")
     os.rename("index.bak", "surge/index.html")
+    logger.info("Cleaned up all leftover files.")
     logger.info("All jobs executed, idling..")

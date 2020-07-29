@@ -1,4 +1,4 @@
-# For curtanax.surge.sh
+# For curtana.surge.sh
 # By Priyam Kalra
 
 import os
@@ -17,7 +17,7 @@ class WebUtils():
 
     def deploy(self):
         output = subprocess.check_output(
-            "surge surge curtana.surge.sh", shell=True)
+            "surge surge https://curtana.surge.sh", shell=True)
         if "Success!" in str(output):
             self.logger.info("curtana.surge.sh deployed sucessfully.")
         else:
@@ -26,8 +26,7 @@ class WebUtils():
 
     def parse_message(self, message):
         author = "\n<br>Follow"
-        keywords = ["Download", "XDA",
-                    "Source changelog", "Support", "Changelog"]
+        keywords = Config.CUSTOM_FILTERS
         for line in message.split("\n"):
             for keyword in keywords:
                 if f"[{keyword}](" in line:
