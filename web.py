@@ -73,9 +73,11 @@ class WebUtils():
             head = f"{value.split()[0][1:]}"
             if "#ROM" in value:
                 roms.append(head)
-            if "#Kernel" in value:
+            elif "#Port" in value:
+            	roms.append(head)
+            elif "#Kernel" in value:
                 kernels.append(head)
-            if "#Recovery" in value:
+            elif "#Recovery" in value:
                 recoveries.append(head)
         return [roms, kernels, recoveries]
 

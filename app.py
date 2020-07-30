@@ -6,17 +6,13 @@ import sys
 from web import WebUtils
 from time import sleep
 
-
-def required(text):
-    return True if "#ROM" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False))
-
-
 @bot.on(command(incoming=True, func=lambda event: str(event.sender_id) in Config.AUTH_CHATS))
 async def watcher(event):
     """
     Watches @curtanaupdates for new rom/kernel/recovery updates
     """
     web = WebUtils(logger)
+    required = lambda text: True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))
     logger.info(web.today + " -- its update day!")
     messages = []
     logger.info("Authenticated chat: " + str(event.sender_id))
