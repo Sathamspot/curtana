@@ -6,13 +6,17 @@ import sys
 from web import WebUtils
 from time import sleep
 
-@bot.on(command(incoming=True, func=lambda event: str(event.sender_id) in Config.AUTH_CHATS))
+
+@client.on(register(incoming=True, func=lambda event: str(event.sender_id) in Config.AUTH_CHATS))
 async def watcher(event):
     """
     Watches @curtanaupdates for new rom/kernel/recovery updates
     """
     web = WebUtils(logger)
-    required = lambda text: True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))
+    def required(text): return True if "#ROM" in text else (True if "#Port" in text else (
+        True if "#Kernel" in text else (True if "#Recovery" in text else False)))
+    if str(event.sender_id) == Config.LOGGER_GROUP:
+        await event.delete()
     logger.info(web.today + " -- its update day!")
     messages = []
     logger.info("Authenticated chat: " + str(event.sender_id))
@@ -20,7 +24,7 @@ async def watcher(event):
     logger.info("Updates chat(s): " + str(chats))
     logger.info("Starting update..")
     for chat in chats:
-        async for message in bot.iter_messages(chat):
+        async for message in client.iter_messages(chat):
             messages.append(message)
     web.data = {}
     thumbnails = []
@@ -36,7 +40,7 @@ async def watcher(event):
                 backup.write(index.read())
         if head.lower() not in str(web.data.keys()).lower():
             web.data.update({head: text})
-            image = await bot.download_media(message, f"surge/{head}/")
+            image = await client.download_media(message, f"surge/{head}/")
             thumbnail = f"surge/{head}/thumbnail.png"
             os.rename(image, thumbnail)
             thumbnails.append(thumbnail)
