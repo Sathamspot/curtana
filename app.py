@@ -3,21 +3,29 @@
 
 import os
 import sys
-from web import WebUtils
 from time import sleep
 
+@client.on(register(outgoing=True, func=lambda event: str(event.sender_id) in Config.AUTH_CHATS))
+async def manual(event):
+    logger.info("Starting jobs for manual update.")
+    await deploy(event)
 
 @client.on(register(incoming=True, func=lambda event: str(event.sender_id) in Config.AUTH_CHATS))
-async def watcher(event):
+async def automatic(event):
+    logger.info("Starting jobs for automatic update.")
+    await deploy(event)
+  
+  
+async def deploy(event):
     """
-    Watches @curtanaupdates for new rom/kernel/recovery updates
+    Parses the data, and then deploys it to surge.sh
     """
-    web = WebUtils(logger)
+    util = utils(logger)
     def required(text): return True if "#ROM" in text else (True if "#Port" in text else (
         True if "#Kernel" in text else (True if "#Recovery" in text else False)))
     if str(event.sender_id) == Config.LOGGER_GROUP:
         await event.delete()
-    logger.info(web.today + " -- its update day!")
+    logger.info(util.today + " -- its update day!")
     messages = []
     logger.info("Authenticated chat: " + str(event.sender_id))
     chats = Config.UPDATE_CHATS
@@ -26,7 +34,7 @@ async def watcher(event):
     for chat in chats:
         async for message in client.iter_messages(chat):
             messages.append(message)
-    web.data = {}
+    util.data = {}
     thumbnails = []
     for message in messages:
         text = message.text if message.text is not None else ""
@@ -38,18 +46,18 @@ async def watcher(event):
         with open("surge/index.html", "r") as index:
             with open("index.bak", "w") as backup:
                 backup.write(index.read())
-        if head.lower() not in str(web.data.keys()).lower():
-            web.data.update({head: text})
+        if head.lower() not in str(util.data.keys()).lower():
+            util.data.update({head: text})
             image = await client.download_media(message, f"surge/{head}/")
             thumbnail = f"surge/{head}/thumbnail.png"
             os.rename(image, thumbnail)
             thumbnails.append(thumbnail)
-            web.save(head)
-    web.refresh()
+            util.save(head)
+    util.refresh()
     logger.info("Update completed.")
     sleep(1)
     logger.info("Deploying curtana.surge.sh..")
-    web.deploy()
+    util.deploy()
     sleep(1)
     logger.info("Cleaning up leftover files..")
     for file in thumbnails:
