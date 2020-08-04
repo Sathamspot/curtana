@@ -50,16 +50,16 @@ async def deploy(event):
             util.save(head)
     util.refresh()
     logger.info("Update completed.")
-    sleep(1)
+    await sleep(1)
     util.deploy()
-    sleep(1)
+    await sleep(1)
     logger.info("Cleaning up leftover files..")
     for file in thumbnails:
         os.remove(file)
     os.remove("surge/index.html")
     os.rename("index.bak", "surge/index.html")
     logger.info("Cleaned up all leftover files.")
-    sleep(1)
+    await sleep(1)
     logger.info("All jobs executed, idling..")
 
 
