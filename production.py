@@ -18,6 +18,6 @@ class Config(object):
     BLACK_LIST = set(int(x) for x in os.environ.get(
         "BLACK_LIST", "").split())
     CUSTOM_FILTERS = ["Download", "XDA", "Support", "Changelog", *os.environ.get("CUSTOM_FILTERS", "").split()]
-    AUTH_CHATS = [*os.environ.get("AUTH_CHATS", "").split(), "-1001438120125"]
-    UPDATE_CHATS = [*os.environ.get("UPDATE_CHATS", "").split(), "@curtanaupdates"]
+    CHATS = [*os.environ.get("CHATS", "").split(), "@curtanaupdates"]
     BLOCKED_UPDATES = os.environ.get("BLOCKED_UPDATES", "").split()
+    SUBDOMAIN = os.environ.get("SUBDOMAIN", "curtana")

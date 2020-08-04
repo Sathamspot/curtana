@@ -126,6 +126,7 @@ def time_formatter(milliseconds: int) -> str:
         ((str(milliseconds) + "ms, ") if milliseconds else "")
     return tmp[:-2]
 
+
 class Utils():
     today = date.today().strftime("%B %d, %Y")
     data = {}
@@ -134,13 +135,15 @@ class Utils():
         self.logger = logger
 
     def deploy(self):
+        logger.info(f"Deploying {Config.SUBDOMAIN}.surge.sh..")
         output = subprocess.check_output(
-            "surge surge https://curtana.surge.sh", shell=True)
+            f"surge surge https://{Config.SUBDOMAIN}.surge.sh", shell=True)
         if "Success!" in str(output):
-            self.logger.info("curtana.surge.sh deployed sucessfully.")
+            self.logger.info(
+                f"{Config.SUBDOMAIN}.surge.sh deployed sucessfully.")
         else:
             self.logger.info(
-                "Failed to deploy curtana.surge.sh " + "\nError: " + str(output))
+                f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " + "\nError: " + str(output))
 
     def parse_message(self, message):
         author = "\n<br>Follow"
