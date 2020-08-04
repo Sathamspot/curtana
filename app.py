@@ -6,7 +6,7 @@ import sys
 from asyncio import sleep
 
 
-def is_auth(event):
+async def is_auth(event):
     chat = await event.get_chat()
     if f"@{chat}" in Config.CHATS:
         return True
