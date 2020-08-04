@@ -135,7 +135,7 @@ class Utils():
         self.logger = logger
 
     def deploy(self):
-        logger.info(f"Deploying {Config.SUBDOMAIN}.surge.sh..")
+        self.logger.info(f"Deploying {Config.SUBDOMAIN}.surge.sh..")
         output = subprocess.check_output(
             f"surge surge https://{Config.SUBDOMAIN}.surge.sh", shell=True)
         if "Success!" in str(output):
