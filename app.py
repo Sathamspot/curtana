@@ -8,7 +8,9 @@ from asyncio import sleep
 
 async def is_auth(event):
     chat = await event.get_chat()
-    if f"@{chat}" in Config.CHATS:
+    tag = f"@{chat.username}"
+    logger.info(f"New updated detected at: {tag}")
+    if tag in Config.CHATS:
         return True
     return False
 
