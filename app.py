@@ -2,43 +2,26 @@
 # By Priyam Kalra
 
 import os
-import sys
 from asyncio import sleep
 
 
-async def is_auth(event):
+async def authorize(event):
     chat = await event.get_chat()
     tag = f"@{chat.username}"
-    logger.info(f"New updated detected at: {tag}")
     if tag in Config.CHATS:
+        logger.info(f"Authorized chat: {tag}")
         return True
     return False
-
-
-def required(text):
-    return True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))
-
-
-@client.on(register(outgoing=True, func=is_auth))
-async def manual(event):
-    logger.info("Starting jobs for manual update.")
-    await deploy(event)
-
-
-@client.on(register(incoming=True, func=is_auth))
-async def automatic(event):
-    logger.info("Starting jobs for automatic update.")
-    await deploy(event)
 
 
 async def deploy(event):
     """
     Parses the data, and then deploys it to surge.sh
     """
-    messages = []
-    util.data = {}
-    thumbnails = []
     util = utils(logger)
+    util.data = {}
+    messages = []
+    thumbnails = []
     chats = Config.CHATS
     logger.info(util.today + " -- its update day!")
     logger.info("Updates chat(s): " + str(chats))
@@ -48,7 +31,9 @@ async def deploy(event):
             messages.append(message)
     for message in messages:
         text = message.text if message.text is not None else ""
-        if not required(text):
+        required = True if "#ROM" in text else (True if "#Port" in text else (
+            True if "#Kernel" in text else (True if "#Recovery" in text else False)))
+        if not required:
             continue
         head = f"{text.split()[0][1:]}"
         if head in Config.BLOCKED_UPDATES:
@@ -76,3 +61,15 @@ async def deploy(event):
     logger.info("Cleaned up all leftover files.")
     sleep(1)
     logger.info("All jobs executed, idling..")
+
+
+@client.on(register(outgoing=True, func=authorize))
+async def manual(event):
+    logger.info("Starting jobs for manual update.")
+    await deploy(event)
+
+
+@client.on(register(incoming=True, func=authorize))
+async def automatic(event):
+    logger.info("Starting jobs for automatic update.")
+    await deploy(event)
