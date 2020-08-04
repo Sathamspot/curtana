@@ -25,7 +25,6 @@ async def deploy(event):
     chats = Config.CHATS
     logger.info(util.today + " -- its update day!")
     logger.info("Updates chat(s): " + str(chats))
-    logger.info("Starting update..")
     for chat in chats:
         async for message in client.iter_messages(chat):
             messages.append(message)
