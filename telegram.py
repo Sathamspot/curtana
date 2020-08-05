@@ -10,6 +10,7 @@ from telethon import TelegramClient
 import telethon.utils
 import telethon.events
 from datetime import datetime
+from production import Config
 from util import register, humanbytes, progress, time_formatter, Utils
 import os
 
@@ -33,8 +34,8 @@ class Userbot(TelegramClient):
         kwargs = {
             "api_id": 6,
             "api_hash": "eb06d4abfb49dc3eeb1aeb98ae0f581e",
-            "device_model": "GNU/Linux nonUI",
-            "app_version": "@The-TG-Bot v3",
+            "device_model": "Website",
+            "app_version": f"@{Config.SUBDOMAIN}.surge.sh",
             "lang_code": "en",
             **kwargs
         }
