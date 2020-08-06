@@ -169,6 +169,7 @@ class Utils():
         else:
             data = self.data
             text = markdown(data[webpage])
+            self.logger.info(text)
             img = f"<img src=https://curtana.surge.sh/{webpage}/thumbnail.png height='225'>"
             head = f"{text.split()[0]}"
             jinja2_template = "{%extends 'base.html'%}\n{%block title%}\n"\
