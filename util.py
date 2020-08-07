@@ -147,7 +147,6 @@ class Utils():
                 f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " + "\nError: " + str(output))
 
     def parse_text(self, text):
-        # We only want to parse links
         changes = {"**": "", "__": "", "\n": "\n<br>"}
         for a, b in changes.items():
             text = text.replace(a, b)
@@ -175,17 +174,9 @@ class Utils():
             path = "surge/index.html"
             jinja2_template = str(open(path, "r").read())
         else:
-            data = self.data
-            text = self.parse_text(data[webpage])
-            self.logger.info(text)
-            img = f"<img src=https://curtana.surge.sh/{webpage}/thumbnail.png height='225'>"
-            head = f"{text.split()[0]}"
-            jinja2_template = "{%extends 'base.html'%}\n{%block title%}\n"\
-                + webpage + "\n{%endblock%}\n{%block body%}\n<div class='jumbotron'>"\
-                + img + "\n<p class='display-4'>\n<hr>\n"\
-                + head + "\n</p>\n"\
-                + "<p class='lead'>\n\n"\
-                + text[len(head):] + "\n</p>\n<hr>\n</div>\n{%endblock%}"
+            kwargs["title"] = webpage
+            kwargs["text"] = self.parse_text(self.data[webpage])
+            jinja2_template = str(open("surge/template.html", "r").read())
         template_object = Environment(
             loader=FileSystemLoader("surge")).from_string(jinja2_template)
         static_template = template_object.render(**kwargs)

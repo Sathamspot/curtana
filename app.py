@@ -50,7 +50,11 @@ async def deploy(event):
     util.refresh()
     logger.info("Update completed.")
     await sleep(1)
+    os.rename("surge/base.html", "base.bak")
+    os.rename("surge/template.html", "template.bak")
     util.deploy()
+    os.rename("base.bak", "surge/base.html")
+    os.rename("template.bak", "surge/template.html")
     await sleep(1)
     logger.info("Cleaning up leftover files..")
     for file in thumbnails:
