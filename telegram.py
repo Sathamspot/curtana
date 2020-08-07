@@ -11,7 +11,7 @@ import telethon.utils
 import telethon.events
 from datetime import datetime
 from production import Config
-from util import register, humanbytes, progress, time_formatter, Utils
+from util import register, humanbytes, progress, time_formatter
 import os
 
 
