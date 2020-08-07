@@ -36,6 +36,8 @@ async def handler(event):
                     rename(image, thumbnail)
                     parse_template(title, title=title, text=parse_text(
                         data[title][len(title)+2:]))
+                    log(title)
+                    exit()
     parsed_data = parse_data(data)
     parse_template(roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
         parsed_data[2]), latest=[parsed_data[0][0], parsed_data[1][0], parsed_data[2][0]], today=today)
@@ -55,12 +57,14 @@ async def handler(event):
     log(["Cleaned up all leftover files.", "All jobs executed, idling.."])
 
 # Helpers
+
+
 def parse_text(text):
     changes = {"**": "", "__": "", "~~": "", "▪️": "• ", "\n": "\n<br>"}
     terms = text.split()
     for term in terms:
         if term.startswith("@"):
-            changes.update({term: f"[{term}](https://t.me/{term})"})
+            changes.update({term: f"[{term}](https://t.me/{term[1:]})"})
     for a, b in changes.items():
         text = text.replace(a, b)
     text = markdown(text)
