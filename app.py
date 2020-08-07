@@ -10,17 +10,6 @@ from subprocess import check_output
 from os import rename, listdir, remove
 from jinja2 import Environment, FileSystemLoader
 
-# Event Dispatchers
-@client.on(register(outgoing=True, func=authorize))
-async def manual(event):
-    log("Starting jobs for manual update.")
-    await handler(event)
-
-
-@client.on(register(incoming=True, func=authorize))
-async def automatic(event):
-    log("Starting jobs for automatic update.")
-    await handler(event)
 
 # Event handler
 async def handler(event):
@@ -137,3 +126,15 @@ async def authorize(event):
         log(f"Authorized chat: {tag}")
         return True
     return False
+
+# Event Dispatchers
+@client.on(register(outgoing=True, func=authorize))
+async def manual(event):
+    log("Starting jobs for manual update.")
+    await handler(event)
+
+
+@client.on(register(incoming=True, func=authorize))
+async def automatic(event):
+    log("Starting jobs for automatic update.")
+    await handler(event)
