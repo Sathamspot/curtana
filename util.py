@@ -5,13 +5,8 @@
 import re
 import math
 import os
-import subprocess
 import time
 from telethon import events
-from markdown import markdown
-from production import Config
-from jinja2 import Environment, FileSystemLoader
-from datetime import date
 from telethon.tl.functions.messages import GetPeerDialogsRequest
 
 
@@ -126,65 +121,3 @@ def time_formatter(milliseconds: int) -> str:
         ((str(seconds) + "s, ") if seconds else "") + \
         ((str(milliseconds) + "ms, ") if milliseconds else "")
     return tmp[:-2]
-
-
-class Utils():
-    today = date.today().strftime("%B %d, %Y")
-    data = {}
-
-    def __init__(self, logger):
-        self.logger = logger
-
-    def deploy(self):
-        self.logger.info(f"Deploying {Config.SUBDOMAIN}.surge.sh..")
-        output = subprocess.check_output(
-            f"surge surge https://{Config.SUBDOMAIN}.surge.sh", shell=True)
-        if "Success!" in str(output):
-            self.logger.info(
-                f"{Config.SUBDOMAIN}.surge.sh deployed sucessfully.")
-        else:
-            self.logger.info(
-                f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " + "\nError: " + str(output))
-
-    def parse_text(self, text):
-        changes = {"**": "", "__": "", "▪️": "•", "\n": "\n<br>"}
-        for a, b in changes.items():
-            text = text.replace(a, b)
-        text = markdown(text)
-        return text
-
-    def parse_data(self):
-        data = self.data
-        roms = []
-        kernels = []
-        recoveries = []
-        for value in data.values():
-            head = f"{value.split()[0][1:]}"
-            if "#ROM" in value:
-                roms.append(head)
-            if "#Kernel" in value:
-                kernels.append(head)
-            if "#Recovery" in value:
-                recoveries.append(head)
-        return [roms, kernels, recoveries]
-
-    def save(self, webpage="index", **kwargs):
-        path = f"surge/{webpage}/index.html"
-        if webpage == "index":
-            path = "surge/index.html"
-            jinja2_template = str(open(path, "r").read())
-        else:
-            kwargs["title"] = webpage
-            kwargs["text"] = self.parse_text(self.data[webpage][len(webpage):])
-            jinja2_template = str(open("surge/template.html", "r").read())
-        template_object = Environment(
-            loader=FileSystemLoader("surge")).from_string(jinja2_template)
-        static_template = template_object.render(**kwargs)
-        with open(path, "w") as f:
-            f.write(static_template)
-
-    def refresh(self):
-        data = self.parse_data()
-        latest = [data[0][0], data[1][0], data[2][0]]
-        self.save(roms=sorted(data[0]), kernels=sorted(
-            data[1]), recoveries=sorted(data[2]), latest=latest, today=self.today)

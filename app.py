@@ -1,78 +1,142 @@
 # For curtana.surge.sh
 # By Priyam Kalra
 
-import os
+from shutil import rmtree
+from datetime import date
 from asyncio import sleep
+from production import Config
+from markdown import markdown
+from subprocess import check_output
+from os import rename, listdir, remove
+from jinja2 import Environment, FileSystemLoader
+
+# Event Dispatchers
+@client.on(register(outgoing=True, func=authorize))
+async def manual(event):
+    log("Starting jobs for manual update.")
+    await handler(event)
+
+
+@client.on(register(incoming=True, func=authorize))
+async def automatic(event):
+    log("Starting jobs for automatic update.")
+    await handler(event)
+
+# Event handler
+async def handler(event):
+    data = {}
+    messages = []
+    today = date.today().strftime("%B %d, %Y")
+    chats = Config.CHATS
+    log([today + " -- its update day!", "Updates chat(s): " + str(chats)])
+    for chat in chats:
+        async for message in client.iter_messages(chat):
+            messages.append(message)
+    for message in messages:
+        text = message.text if message.text is not None else ""
+        if (True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))):
+            title = f"{text.split()[0][1:]}"
+            if title not in Config.BLOCKED_UPDATES:
+                with open("surge/index.html", "r") as index:
+                    with open("index.bak", "w") as backup:
+                        backup.write(index.read())
+                if title.lower() not in str(data.keys()).lower():
+                    data.update({title: text})
+                    image = await client.download_media(message, f"surge/{title}/")
+                    thumbnail = f"surge/{title}/thumbnail.png"
+                    rename(image, thumbnail)
+                    parse_template(title)
+    parse_template(data=parse_data(data), roms=sorted(data[0]), kernels=sorted(
+        data[1]), recoveries=sorted(data[2]), latest=[data[0][0], data[1][0], data[2][0]], today=today)
+    log("Update completed.")
+    to_backup = {"surge/base.html": "base.html",
+                 "surge/template.html": "template.html"}
+    rename_files(to_backup)
+    deploy()
+    log("Cleaning up leftover files..")
+    for f in listdir("surge"):
+        if path.isdir(f"surge/{f}"):
+            rmtree(f"surge/{f}")
+    remove("surge/index.html")
+    to_restore = {"base.html": "surge/base.html",
+                  "template.html": "surge/template.html", "index.bak": "surge/index.html"}
+    rename_files(to_restore)
+    log(["Cleaned up all leftover files.", "All jobs executed, idling.."])
+
+# Helpers
+def parse_text(text):
+    changes = {"**": "", "__": "", "~~": "", "▪️": "• ", "\n": "\n<br>"}
+    terms = text.split()
+    for term in terms:
+        if term.startswith("@"):
+            changes.update({term: f"[{term}](https://t.me/{term})"})
+    for a, b in changes.items():
+        text = text.replace(a, b)
+    text = markdown(text)
+    return text
+
+
+def parse_data(data):
+    roms = []
+    kernels = []
+    recoveries = []
+    for title, value in data.items():
+        if "#ROM" in value:
+            roms.append(title)
+        if "#Port" in value:
+            roms.append(title)
+        if "#Kernel" in value:
+            kernels.append(title)
+        if "#Recovery" in value:
+            recoveries.append(title)
+    return [roms, kernels, recoveries]
+
+
+def parse_template(data, webpage="index", **kwargs):
+    path = f"surge/{webpage}/index.html"
+    if webpage == "index":
+        path = "surge/index.html"
+        jinja2_template = str(open(path, "r").read())
+    else:
+        kwargs["title"] = webpage
+        kwargs["text"] = parse_text(
+            data[webpage][len(webpage)+2:])
+        jinja2_template = str(open("surge/template.html", "r").read())
+    template_object = Environment(
+        loader=FileSystemLoader("surge")).from_string(jinja2_template)
+    static_template = template_object.render(**kwargs)
+    with open(path, "w") as f:
+        f.write(static_template)
+
+
+def log(text):
+    if type(text) is not list:
+        text = [text]
+    for item in text:
+        logger.info(item)
+        await sleep(1)
+
+
+def rename_files(file_dict):
+    for src, dst in file_dict.items():
+        rename(src, dst)
+
+
+def deploy():
+    log(f"Deploying {Config.SUBDOMAIN}.surge.sh..")
+    output = check_output(
+        f"surge surge https://{Config.SUBDOMAIN}.surge.sh", shell=True)
+    if "Success!" in str(output):
+        log(f"{Config.SUBDOMAIN}.surge.sh deployed sucessfully.")
+    else:
+        log(f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " +
+            "\nError: " + str(output))
 
 
 async def authorize(event):
     chat = await event.get_chat()
     tag = f"@{chat.username}"
     if tag in Config.CHATS:
-        logger.info(f"Authorized chat: {tag}")
+        log(f"Authorized chat: {tag}")
         return True
     return False
-
-
-async def deploy(event):
-    """
-    Parses the data, and then deploys it to surge.sh
-    """
-    util = utils(logger)
-    util.data = {}
-    messages = []
-    thumbnails = []
-    chats = Config.CHATS
-    logger.info(util.today + " -- its update day!")
-    logger.info("Updates chat(s): " + str(chats))
-    for chat in chats:
-        async for message in client.iter_messages(chat):
-            messages.append(message)
-    for message in messages:
-        text = message.text if message.text is not None else ""
-        required = True if "#ROM" in text else (True if "#Port" in text else (
-            True if "#Kernel" in text else (True if "#Recovery" in text else False)))
-        if not required:
-            continue
-        head = f"{text.split()[0][1:]}"
-        if head in Config.BLOCKED_UPDATES:
-            continue
-        with open("surge/index.html", "r") as index:
-            with open("index.bak", "w") as backup:
-                backup.write(index.read())
-        if head.lower() not in str(util.data.keys()).lower():
-            util.data.update({head: text})
-            image = await client.download_media(message, f"surge/{head}/")
-            thumbnail = f"surge/{head}/thumbnail.png"
-            os.rename(image, thumbnail)
-            thumbnails.append(thumbnail)
-            util.save(head)
-    util.refresh()
-    logger.info("Update completed.")
-    await sleep(1)
-    os.rename("surge/base.html", "base.bak")
-    os.rename("surge/template.html", "template.bak")
-    util.deploy()
-    os.rename("base.bak", "surge/base.html")
-    os.rename("template.bak", "surge/template.html")
-    await sleep(1)
-    logger.info("Cleaning up leftover files..")
-    for file in thumbnails:
-        os.remove(file)
-    os.remove("surge/index.html")
-    os.rename("index.bak", "surge/index.html")
-    logger.info("Cleaned up all leftover files.")
-    await sleep(1)
-    logger.info("All jobs executed, idling..")
-
-
-@client.on(register(outgoing=True, func=authorize))
-async def manual(event):
-    logger.info("Starting jobs for manual update.")
-    await deploy(event)
-
-
-@client.on(register(incoming=True, func=authorize))
-async def automatic(event):
-    logger.info("Starting jobs for automatic update.")
-    await deploy(event)
