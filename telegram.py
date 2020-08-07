@@ -84,7 +84,6 @@ class Userbot(TelegramClient):
         mod.time_formatter = time_formatter
         mod.logger = logging.getLogger(shortname)
         mod.Config = self.config
-        mod.utils = Utils
         spec.loader.exec_module(mod)
         self._modules[shortname] = mod
         self._logger.info(f"Successfully loaded module {shortname}")
