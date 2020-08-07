@@ -37,8 +37,8 @@ async def handler(event):
                     parse_template(title=title, text=parse_text(
                         data[title][len(title)+1:]))
     parsed_data = parse_data(data)
-    parse_template(title="404")
-    parse_template(title="index", roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
+    parse_template(title="404.html")
+    parse_template(title="index.html", roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
         parsed_data[2]), latest=[parsed_data[0][0], parsed_data[1][0], parsed_data[2][0]], today=today)
     log("Update completed.")
     to_backup = {"surge/base.html": "base.html",
@@ -56,6 +56,8 @@ async def handler(event):
     log(["Cleaned up all leftover files.", "All jobs executed, idling.."])
 
 # Helpers
+
+
 def parse_text(text):
     changes = {"**": "", "__": "", "~~": "", "▪️": "• ", "\n": "\n<br>"}
     terms = text.split()
@@ -86,8 +88,8 @@ def parse_data(data):
 
 def parse_template(title, **kwargs):
     path = f"surge/{title}/index.html"
-    if title == "index":
-        path = "surge/index.html"
+    if title.endswith(".html"):
+        path = f"surge/{title}"
         jinja2_template = str(open(path, "r").read())
     else:
         kwargs["title"] = title
