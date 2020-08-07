@@ -23,19 +23,21 @@ async def handler(event):
             messages.append(message)
     for message in messages:
         text = message.text if message.text is not None else ""
-        if (True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))):
-            title = f"{text.split()[0][1:]}"
-            if title not in Config.BLOCKED_UPDATES:
-                with open("surge/index.html", "r") as index:
-                    with open("index.bak", "w") as backup:
-                        backup.write(index.read())
-                if title.lower() not in str(data.keys()).lower():
-                    data.update({title: text})
-                    image = await client.download_media(message, f"surge/{title}/")
-                    thumbnail = f"surge/{title}/thumbnail.png"
-                    rename(image, thumbnail)
-                    parse_template(title, title=title, text=parse_text(
-                        data[title][len(title)+2:]))
+        if not (True if "#ROM" in text else (True if "#Port" in text else (True if "#Kernel" in text else (True if "#Recovery" in text else False)))):
+            continue
+        title = f"{text.split()[0][1:]}"
+        if title in Config.BLOCKED_UPDATES:
+            continue
+        with open("surge/index.html", "r") as index:
+            with open("index.bak", "w") as backup:
+                backup.write(index.read())
+        if title.lower() not in str(data.keys()).lower():
+            data.update({title: text})
+            image = await client.download_media(message, f"surge/{title}/")
+            thumbnail = f"surge/{title}/thumbnail.png"
+            rename(image, thumbnail)
+            parse_template(title, title=title, text=parse_text(
+                data[title][len(title)+2:]))
     parse_template(roms=sorted(data[0]), kernels=sorted(
         data[1]), recoveries=sorted(data[2]), latest=[data[0][0], data[1][0], data[2][0]], today=today)
     log("Update completed.")
