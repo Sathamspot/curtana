@@ -34,8 +34,9 @@ async def handler(event):
                     image = await client.download_media(message, f"surge/{title}/")
                     thumbnail = f"surge/{title}/thumbnail.png"
                     rename(image, thumbnail)
-                    parse_template(title, title=title, text=parse_text(data[title][len(title)+2:]))
-    parse_template(data=parse_data(data), roms=sorted(data[0]), kernels=sorted(
+                    parse_template(title, title=title, text=parse_text(
+                        data[title][len(title)+2:]))
+    parse_template(roms=sorted(data[0]), kernels=sorted(
         data[1]), recoveries=sorted(data[2]), latest=[data[0][0], data[1][0], data[2][0]], today=today)
     log("Update completed.")
     to_backup = {"surge/base.html": "base.html",
@@ -81,7 +82,7 @@ def parse_data(data):
     return [roms, kernels, recoveries]
 
 
-def parse_template(data, webpage="index", **kwargs):
+def parse_template(webpage="index", **kwargs):
     path = f"surge/{webpage}/index.html"
     if webpage == "index":
         path = "surge/index.html"
