@@ -3,7 +3,7 @@
 
 from shutil import rmtree
 from datetime import date
-from asyncio import sleep
+from time import sleep
 from production import Config
 from markdown import markdown
 from subprocess import check_output
@@ -45,7 +45,7 @@ async def handler(event):
                     image = await client.download_media(message, f"surge/{title}/")
                     thumbnail = f"surge/{title}/thumbnail.png"
                     rename(image, thumbnail)
-                    parse_template(title)
+                    parse_template(title, title=title, text=parse_text(data[title][len(title)+2:]))
     parse_template(data=parse_data(data), roms=sorted(data[0]), kernels=sorted(
         data[1]), recoveries=sorted(data[2]), latest=[data[0][0], data[1][0], data[2][0]], today=today)
     log("Update completed.")
@@ -98,9 +98,6 @@ def parse_template(data, webpage="index", **kwargs):
         path = "surge/index.html"
         jinja2_template = str(open(path, "r").read())
     else:
-        kwargs["title"] = webpage
-        kwargs["text"] = parse_text(
-            data[webpage][len(webpage)+2:])
         jinja2_template = str(open("surge/template.html", "r").read())
     template_object = Environment(
         loader=FileSystemLoader("surge")).from_string(jinja2_template)
@@ -114,7 +111,7 @@ def log(text):
         text = [text]
     for item in text:
         logger.info(item)
-        await sleep(1)
+        sleep(1)
 
 
 def rename_files(file_dict):
