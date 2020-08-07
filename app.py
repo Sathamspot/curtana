@@ -34,12 +34,11 @@ async def handler(event):
                     image = await client.download_media(message, f"surge/{title}/")
                     thumbnail = f"surge/{title}/thumbnail.png"
                     rename(image, thumbnail)
-                    parse_template(title, title=title, text=parse_text(
-                        data[title][len(title)+2:]))
-                    log(title)
-                    exit()
+                    parse_template(title=title, text=parse_text(
+                        data[title][len(title)+1:]))
     parsed_data = parse_data(data)
-    parse_template(roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
+    parse_template(title="404")
+    parse_template(title="index", roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
         parsed_data[2]), latest=[parsed_data[0][0], parsed_data[1][0], parsed_data[2][0]], today=today)
     log("Update completed.")
     to_backup = {"surge/base.html": "base.html",
@@ -57,8 +56,6 @@ async def handler(event):
     log(["Cleaned up all leftover files.", "All jobs executed, idling.."])
 
 # Helpers
-
-
 def parse_text(text):
     changes = {"**": "", "__": "", "~~": "", "▪️": "• ", "\n": "\n<br>"}
     terms = text.split()
@@ -87,12 +84,13 @@ def parse_data(data):
     return [roms, kernels, recoveries]
 
 
-def parse_template(webpage="index", **kwargs):
-    path = f"surge/{webpage}/index.html"
-    if webpage == "index":
+def parse_template(title, **kwargs):
+    path = f"surge/{title}/index.html"
+    if title == "index":
         path = "surge/index.html"
         jinja2_template = str(open(path, "r").read())
     else:
+        kwargs["title"] = title
         jinja2_template = str(open("surge/template.html", "r").read())
     template_object = Environment(
         loader=FileSystemLoader("surge")).from_string(jinja2_template)
