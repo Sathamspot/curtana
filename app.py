@@ -7,7 +7,7 @@ from time import sleep
 from production import Config
 from markdown import markdown
 from subprocess import check_output
-from os import rename, listdir, remove
+from os import rename, listdir, remove, path
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -34,9 +34,11 @@ async def handler(event):
                     image = await client.download_media(message, f"surge/{title}/")
                     thumbnail = f"surge/{title}/thumbnail.png"
                     rename(image, thumbnail)
-                    parse_template(title, title=title, text=parse_text(data[title][len(title)+2:]))
+                    parse_template(title, title=title, text=parse_text(
+                        data[title][len(title)+2:]))
     parsed_data = parse_data(data)
-    parse_template(roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(parsed_data[2]), latest=[parsed_data[0][0], parsed_data[1][0], data[2][0]], today=today)
+    parse_template(roms=sorted(parsed_data[0]), kernels=sorted(parsed_data[1]), recoveries=sorted(
+        parsed_data[2]), latest=[parsed_data[0][0], parsed_data[1][0], parsed_data[2][0]], today=today)
     log("Update completed.")
     to_backup = {"surge/base.html": "base.html",
                  "surge/template.html": "template.html"}
