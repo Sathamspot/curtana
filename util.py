@@ -146,6 +146,14 @@ class Utils():
             self.logger.info(
                 f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " + "\nError: " + str(output))
 
+    def parse_text(self, text):
+        # We only want to parse links
+        changes = {"**": "", "__": "", "\n": "\n<br>"}
+        for a, b in changes.items():
+            text.replace(a, b)
+        text = markdown(text)
+        return text
+
     def parse_data(self):
         data = self.data
         roms = []
@@ -168,16 +176,16 @@ class Utils():
             jinja2_template = str(open(path, "r").read())
         else:
             data = self.data
-            text = markdown(data[webpage])
+            text = self.parse_text(data[webpage])
             self.logger.info(text)
             img = f"<img src=https://curtana.surge.sh/{webpage}/thumbnail.png height='225'>"
             head = f"{text.split()[0]}"
             jinja2_template = "{%extends 'base.html'%}\n{%block title%}\n"\
                 + webpage + "\n{%endblock%}\n{%block body%}\n<div class='jumbotron'>"\
-                + img + "\n<h1 class='display-4'>\n<hr>\n"\
-                + head + "\n</h1>\n"\
-                + "<p class='lead'>\n\n"\
-                + text[len(head):] + "\n</p>\n<hr>\n</div>\n{%endblock%}"
+                + img + "\n<span class='display-4'>\n<hr>\n"\
+                + head + "\n</span>\n"\
+                + "<div class='lead'>\n\n"\
+                + text[len(head):] + "\n</div>\n<hr>\n</div>\n{%endblock%}"
         template_object = Environment(
             loader=FileSystemLoader("surge")).from_string(jinja2_template)
         static_template = template_object.render(**kwargs)
