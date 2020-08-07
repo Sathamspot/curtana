@@ -150,7 +150,7 @@ class Utils():
         # We only want to parse links
         changes = {"**": "", "__": "", "\n": "\n<br>"}
         for a, b in changes.items():
-            text.replace(a, b)
+            text = text.replace(a, b)
         text = markdown(text)
         return text
 
@@ -182,10 +182,10 @@ class Utils():
             head = f"{text.split()[0]}"
             jinja2_template = "{%extends 'base.html'%}\n{%block title%}\n"\
                 + webpage + "\n{%endblock%}\n{%block body%}\n<div class='jumbotron'>"\
-                + img + "\n<span class='display-4'>\n<hr>\n"\
-                + head + "\n</span>\n"\
-                + "<div class='lead'>\n\n"\
-                + text[len(head):] + "\n</div>\n<hr>\n</div>\n{%endblock%}"
+                + img + "\n<p class='display-4'>\n<hr>\n"\
+                + head + "\n</p>\n"\
+                + "<p class='lead'>\n\n"\
+                + text[len(head):] + "\n</p>\n<hr>\n</div>\n{%endblock%}"
         template_object = Environment(
             loader=FileSystemLoader("surge")).from_string(jinja2_template)
         static_template = template_object.render(**kwargs)
