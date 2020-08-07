@@ -147,7 +147,7 @@ class Utils():
                 f"Failed to deploy {Config.SUBDOMAIN}.surge.sh " + "\nError: " + str(output))
 
     def parse_text(self, text):
-        changes = {"**": "", "__": "", "\n": "\n<br>"}
+        changes = {"**": "", "__": "", "▪️": "•", "\n": "\n<br>"}
         for a, b in changes.items():
             text = text.replace(a, b)
         text = markdown(text)
@@ -175,7 +175,7 @@ class Utils():
             jinja2_template = str(open(path, "r").read())
         else:
             kwargs["title"] = webpage
-            kwargs["text"] = self.parse_text(self.data[webpage])[len(webpage):]
+            kwargs["text"] = self.parse_text(self.data[webpage][len(webpage):])
             jinja2_template = str(open("surge/template.html", "r").read())
         template_object = Environment(
             loader=FileSystemLoader("surge")).from_string(jinja2_template)

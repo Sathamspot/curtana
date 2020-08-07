@@ -10,6 +10,14 @@ img {
   border-radius: 30px;
 }
 
+li {
+  list-style-type: none;
+}
+
+li:before {
+  content: '• ';
+}
+
 .jumbotron {
   background-color: black;
   color: white;
